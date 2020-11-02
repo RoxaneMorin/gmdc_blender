@@ -308,19 +308,21 @@ class ImportGMDC(Operator, ImportHelper):
             shpkey = object.shape_key_add(from_mix=False)
             shpkey.name = "Basis"
 
-            for morph in b_model.morphs:
-                if morph.name == ', ':
-                    continue
+            try:
+                for morph in b_model.morphs:
+                    if morph.name == ', ':
+                    	continue
 
-                shpkey = object.shape_key_add(from_mix=False)
-                shpkey.name = morph.name
-
-                for i, vert in enumerate(mesh.vertices):
-                    shpkey.data[vert.index].co = Vector( (
-                        vert.co[0] + morph.deltas[i][0],
-                        vert.co[1] + morph.deltas[i][1],
-                        vert.co[2] + morph.deltas[i][2]
-                    ) )
+                    shpkey = object.shape_key_add(from_mix=False)
+                    shpkey.name = morph.name
+                
+                    for i, vert in enumerate(mesh.vertices):
+                    	shpkey.data[vert.index].co = Vector( (
+                        	vert.co[0] + morph.deltas[i][0],
+                        	vert.co[1] + morph.deltas[i][1],
+                        	vert.co[2] + morph.deltas[i][2]
+                        	) )
+            except: print("Additional morphs were discarded.")
 
         # Add vertex group to control which verts keep their old normals
         # object.vertex_groups.new("__NORMALS__")
@@ -357,9 +359,9 @@ class ImportGMDC(Operator, ImportHelper):
         numedges = 0
         for e in bm.edges:
             edgemid = tuple((e.verts[0].co + e.verts[1].co) / 2)
-            if len(edges[edgemid]) > 2:
-                numedges += 1
-                e.smooth = False
+            if edgemid in edges and len(edges[edgemid]) > 2 :
+                    numedges += 1
+                    e.smooth = False
 
         print(numedges, 'Hard edges found.')
         print()
