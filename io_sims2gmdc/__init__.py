@@ -40,7 +40,7 @@ bl_info = {
     "name": "Sims 2 GMDC Tools (Blender 2.80)",
     "category": "Import-Export",
 	"version": (0, 3, 0),
-	"blender": (2, 8, 0),
+	"blender": (2, 80, 0),
 	"location": "File > Import/Export",
 	"description": "Importer and exporter for Sims 2 GMDC(.5gd) files"
 }
