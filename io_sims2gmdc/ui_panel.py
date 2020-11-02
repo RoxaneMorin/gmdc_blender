@@ -76,7 +76,7 @@ class OP_SyncMorphs(bpy.types.Operator):
     bl_idname = "gmdc.morphs_sync"
 
     def execute(self, context):
-        container = context.scene.objects.active
+        container = context.active_object
         if container.parent and container.parent.type == 'EMPTY' and container.parent.get("filename"):
             container = container.parent
 
@@ -137,7 +137,7 @@ class OP_AddMorph(bpy.types.Operator):
     def execute(self, context):
         gmdc_props = context.scene.gmdc_props
 
-        container = context.scene.objects.active
+        container = context.active_object
         if container.parent and container.parent.type == 'EMPTY' and container.parent.get("filename"):
             container = container.parent
 
@@ -193,7 +193,7 @@ class OP_UpdateMorphNames(bpy.types.Operator):
 
     def execute(self, context):
         gmdc_props = context.scene.gmdc_props
-        container = context.scene.objects.active
+        container = context.active_object
         if container.parent and container.parent.type == 'EMPTY' and container.parent.get("filename"):
             container = container.parent
 
@@ -219,7 +219,7 @@ class OP_UpdateNeckFix(bpy.types.Operator):
 
     def execute(self, context):
         gmdc_props = context.scene.gmdc_props
-        obj = bpy.context.scene.objects.active
+        obj = context.active_object
 
         global NECKFIX
         obj["neck_fix"] = NECKFIX[gmdc_props.neckfix_type]
@@ -232,13 +232,13 @@ class OP_HideShadows(bpy.types.Operator):
     bl_idname = "gmdc.shadow_hide"
 
     def execute(self, context):
-        obj = bpy.context.scene.objects.active
+        obj = context.active_object
         if obj.parent:
             obj = obj.parent
 
         for ob in bpy.context.scene.objects:
             if ob.get("is_shadow") == True and ob.parent == obj:
-                ob.hide = True
+                ob.hide_set(True)
 
         return {'FINISHED'}
 
@@ -248,13 +248,13 @@ class OP_UnhideShadows(bpy.types.Operator):
     bl_idname = "gmdc.shadow_unhide"
 
     def execute(self, context):
-        obj = bpy.context.scene.objects.active
+        obj = context.active_object
         if obj.parent:
             obj = obj.parent
 
         for ob in bpy.context.scene.objects:
             if ob.get("is_shadow") == True and ob.parent == obj:
-                ob.hide = False
+                ob.hide_set(False)
 
         return {'FINISHED'}
 
@@ -264,13 +264,13 @@ class OP_UnHideArmature(bpy.types.Operator):
     bl_idname = "gmdc.armature_unhide"
 
     def execute(self, context):
-        obj = bpy.context.scene.objects.active
+        obj = context.active_object
         if obj.parent:
             obj = obj.parent
 
         for ob in bpy.context.scene.objects:
             if ob.type == 'ARMATURE' and ob.parent == obj:
-                ob.hide = False
+                ob.hide_set(False)
 
         return {'FINISHED'}
 
@@ -280,13 +280,13 @@ class OP_HideArmature(bpy.types.Operator):
     bl_idname = "gmdc.armature_hide"
 
     def execute(self, context):
-        obj = bpy.context.scene.objects.active
+        obj = context.active_object
         if obj.parent:
             obj = obj.parent
 
         for ob in bpy.context.scene.objects:
             if ob.type == 'ARMATURE' and ob.parent == obj:
-                ob.hide = True
+                ob.hide_set(True)
 
         return {'FINISHED'}
 # </editor-fold> -- END PROPERTIES
@@ -305,8 +305,8 @@ class GmdcPanel(bpy.types.Panel):
         layout = self.layout
 
         scene = context.scene
-        obj = scene.objects.active
-
+        obj = context.active_object
+        
         # Import/Export buttons
         row = layout.row(align=True)
         row.operator("import.gmdc_import", text="Import GMDC", icon='IMPORT')
@@ -314,12 +314,11 @@ class GmdcPanel(bpy.types.Panel):
 
         #print(scene.objects.active)
         try:
-            if obj and obj.select and obj.type == 'MESH':
+            if obj and obj.select_get() and obj.type == 'MESH':
                 self.draw_object(obj, scene)
-
-            if obj and obj.select and obj.type == 'EMPTY':
+            if obj and obj.select_get() and obj.type == 'EMPTY':
                 self.draw_container(obj, scene)
-            elif obj and obj.select and obj.parent and not obj.type == 'MESH':
+            elif obj and obj.select_get() and obj.parent and not obj.type == 'MESH':
                 if obj.parent.get("filename", None):
                     self.draw_container(obj.parent, scene)
         except:
@@ -337,10 +336,12 @@ class GmdcPanel(bpy.types.Panel):
 
         col = box.column()
         col.prop(obj, '["filename"]')
+		
         row = col.row(align=True)
-        row.label(text="Shadows:", icon='LAMP_SPOT')
+        row.label(text="Shadows:", icon='LIGHT')
         row.operator("gmdc.shadow_hide", text="Hide", icon='RESTRICT_VIEW_ON')
         row.operator("gmdc.shadow_unhide", text="Unhide", icon='RESTRICT_VIEW_OFF')
+		
         row = col.row(align=True)
         row.label(text="Armature:", icon='ARMATURE_DATA')
         row.operator("gmdc.armature_hide", text="Hide", icon='RESTRICT_VIEW_ON')
@@ -357,27 +358,28 @@ class GmdcPanel(bpy.types.Panel):
 
         # Group properties
         layout.separator()
-        layout.label("Group Properties:")
+        layout.label(text="Group Properties:")
 
         box = layout.box()
         col = box.column()
+		
         col.label(text=obj.name, icon='MESH_CUBE')
 
         box.prop(obj, "name")
 
         if obj.get("opacity") != None:
             row = box.row()
-            row.label("Opacity:")
+            row.label(text="Opacity:")
             row.prop(obj, '["opacity"]', text="")
 
         if obj.get("is_shadow") != None:
             row = box.row()
-            row.label("Shadowmesh:")
+            row.label(text="Shadowmesh:")
             row.prop(obj, '["is_shadow"]', text="")
 
         if obj.get("calc_tangents") != None and not obj.get("is_shadow"):
             row = box.row()
-            row.label("Calculate Tangents:")
+            row.label(text="Calculate Tangents:")
             row.prop(obj, '["calc_tangents"]', text="")
 
 

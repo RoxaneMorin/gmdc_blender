@@ -37,13 +37,28 @@ from .ui_panel       import(PROP_GmdcSettings,
 
 
 bl_info = {
-    "name": "Sims 2 GMDC Tools",
+    "name": "Sims 2 GMDC Tools (Blender 2.80)",
     "category": "Import-Export",
 	"version": (0, 2, '1B'),
-	"blender": (2, 79, 0),
+	"blender": (3, 0, 0),
 	"location": "File > Import/Export",
 	"description": "Importer and exporter for Sims 2 GMDC(.5gd) files"
 }
+
+classes = [
+    ImportGMDC,
+    ExportGMDC,
+	GmdcPanel,
+	OP_AddMorph,
+	OP_UpdateMorphNames,
+	OP_UpdateNeckFix,
+	OP_HideShadows,
+	OP_UnhideShadows,
+	OP_HideArmature,
+	OP_UnHideArmature,
+	OP_SyncMorphs,
+	PROP_GmdcSettings
+]
 
 
 def menu_func_im(self, context):
@@ -53,44 +68,22 @@ def menu_func_ex(self, context):
     self.layout.operator(ExportGMDC.bl_idname)
 
 def register():
-    # IO
-    bpy.utils.register_class(ImportGMDC)
-    bpy.utils.register_class(ExportGMDC)
-    bpy.types.INFO_MT_file_import.append(menu_func_im)
-    bpy.types.INFO_MT_file_export.append(menu_func_ex)
-
-    # Tool Panel
-    bpy.utils.register_class(GmdcPanel)
-    bpy.utils.register_class(OP_AddMorph)
-    bpy.utils.register_class(OP_UpdateMorphNames)
-    bpy.utils.register_class(OP_UpdateNeckFix)
-    bpy.utils.register_class(OP_HideShadows)
-    bpy.utils.register_class(OP_UnhideShadows)
-    bpy.utils.register_class(OP_HideArmature)
-    bpy.utils.register_class(OP_UnHideArmature)
-    bpy.utils.register_class(OP_SyncMorphs)
-    bpy.utils.register_class(PROP_GmdcSettings)
-    bpy.types.Scene.gmdc_props = PointerProperty(type=PROP_GmdcSettings)
+	for item in classes:
+		bpy.utils.register_class(item)
+		
+	bpy.types.TOPBAR_MT_file_import.append(menu_func_im)
+	bpy.types.TOPBAR_MT_file_export.append(menu_func_ex)
+	
+	bpy.types.Scene.gmdc_props = bpy.props.PointerProperty(type=PROP_GmdcSettings)
 
 
 def unregister():
-    # IO
-    bpy.utils.unregister_class(ImportGMDC)
-    bpy.utils.unregister_class(ExportGMDC)
-    bpy.types.INFO_MT_file_import.remove(menu_func_im)
-    bpy.types.INFO_MT_file_export.remove(menu_func_ex)
+    for item in classes:
+        bpy.utils.unregister_class(item)
+		
+    bpy.types.TOPBAR_MT_file_import.remove(menu_func_im)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func_ex)
 
-    # Tool Panel
-    bpy.utils.unregister_class(GmdcPanel)
-    bpy.utils.unregister_class(OP_AddMorph)
-    bpy.utils.unregister_class(OP_UpdateMorphNames)
-    bpy.utils.unregister_class(OP_UpdateNeckFix)
-    bpy.utils.unregister_class(OP_HideShadows)
-    bpy.utils.unregister_class(OP_UnhideShadows)
-    bpy.utils.unregister_class(OP_HideArmature)
-    bpy.utils.unregister_class(OP_UnHideArmature)
-    bpy.utils.unregister_class(OP_SyncMorphs)
-    bpy.utils.unregister_class(PROP_GmdcSettings)
     del bpy.types.Scene.gmdc_props
 
 
