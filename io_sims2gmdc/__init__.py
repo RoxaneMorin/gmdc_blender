@@ -39,8 +39,8 @@ from .ui_panel       import(PROP_GmdcSettings,
 bl_info = {
     "name": "Sims 2 GMDC Tools (Blender 2.80)",
     "category": "Import-Export",
-	"version": (0, 2, '1B'),
-	"blender": (3, 0, 0),
+	"version": (0, 3, 0),
+	"blender": (2, 8, 0),
 	"location": "File > Import/Export",
 	"description": "Importer and exporter for Sims 2 GMDC(.5gd) files"
 }
