@@ -152,24 +152,22 @@ class ExportGMDC(Operator, ExportHelper):
         Replace normals based on vertex colors,
         only applies to verts affected by __NORMALS__
         """
-        #if not object.vertex_groups['__NORMALS__']:
+        #if not mesh.vertex_colors['__NORMALS__']:
         #    return
-        if not mesh.vertex_colors['__NORMALS__']:
-            return
 
         #mesh = object.data
-        color_map = mesh.vertex_colors['__NORMALS__']
-        #grp_idx = object.vertex_groups['__NORMALS__'].index
+        try:
+        	color_map = mesh.vertex_colors['__NORMALS__']
 
-        for poly in mesh.polygons:
-            for vert_idx, loop_idx in zip(poly.vertices, poly.loop_indices):
-                #groups = [grp.group for grp in mesh.vertices[vert_idx].groups]
-                rgba = Vector(color_map.data[loop_idx].color)
-                if rgba.x == 0 and rgba.y == 0 and rgba.z == 0:
-                    continue
-                rgb = rgba.to_3d()
-                normal = rgb * 2 - Vector((1,1,1))
-                mesh.vertices[vert_idx].normal = normal
+        	for poly in mesh.polygons:
+        	    for vert_idx, loop_idx in zip(poly.vertices, poly.loop_indices):
+        	        #groups = [grp.group for grp in mesh.vertices[vert_idx].groups]
+        	        rgba = Vector(color_map.data[loop_idx].color)
+        	        if rgba.x == 0 and rgba.y == 0 and rgba.z == 0: continue
+        	        rgb = rgba.to_3d()
+        	        normal = rgb * 2 - Vector((1,1,1))
+        	        mesh.vertices[vert_idx].normal = normal
+        except: return
 
 
 

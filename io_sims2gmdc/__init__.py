@@ -33,6 +33,7 @@ from .ui_panel       import(PROP_GmdcSettings,
                             OP_HideArmature,
                             OP_UnHideArmature,
                             OP_SyncMorphs,
+                            OP_AddGMDCParams,
                             GmdcPanel)
 
 
@@ -57,6 +58,7 @@ classes = [
 	OP_HideArmature,
 	OP_UnHideArmature,
 	OP_SyncMorphs,
+	OP_AddGMDCParams,
 	PROP_GmdcSettings
 ]
 

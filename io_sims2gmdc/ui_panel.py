@@ -1,4 +1,5 @@
 import bpy
+from rna_prop_ui import rna_idprop_ui_prop_get
 from bpy.props import (StringProperty,
                        BoolProperty,
                        IntProperty,
@@ -289,6 +290,55 @@ class OP_HideArmature(bpy.types.Operator):
                 ob.hide_set(True)
 
         return {'FINISHED'}
+		
+
+class OP_AddGMDCParams(bpy.types.Operator):
+    bl_label = "Add GMDC parameters"
+    bl_idname = "gmdc.add_gmdc_param"
+
+    def __add_property(self, obj, key, value, range, description):
+        obj[key] = value
+        prop_ui = rna_idprop_ui_prop_get(obj, key)
+        prop_ui["min"] = range[0]
+        prop_ui["max"] = range[1]
+        prop_ui["soft_min"] = range[0]
+        prop_ui["soft_max"] = range[1]
+        prop_ui["description"] = description
+
+        for area in bpy.context.screen.areas:
+            area.tag_redraw()	
+
+    def execute(self, context):
+        obj = context.active_object
+		
+        if obj.get("opacity") == None:
+            self.__add_property(
+        	obj   = obj,
+        	key   = "opacity",
+        	value = -1,
+        	range = [-1, 255],
+        	description = "Opacity of this mesh."
+        	)
+        
+        if obj.get("is_shadow") == None:
+            self.__add_property(
+			obj   = obj,
+			key   = "is_shadow",
+			value = "shadow" in obj.name,
+			range = [0, 1],
+			description = "Is this a shadow mesh?"
+			)
+        
+        if obj.get("calc_tangents") == None:
+            self.__add_property(
+			obj   = obj,
+			key   = "calc_tangents",
+			value = 1,
+			range = [0, 1],
+			description = "Should tangents be calculated on export?"
+			)
+			
+        return {'FINISHED'}
 # </editor-fold> -- END PROPERTIES
 
 
@@ -415,3 +465,13 @@ class GmdcPanel(bpy.types.Panel):
         row = col.row(align=True)
         row.operator("gmdc.fixes_neckseam", text="Apply neck fix")
         row.prop(gmdc_props, "neckfix_type", expand=False, text="")
+		
+		
+        # UTILITIES
+        utilities = layout.box()
+        utilities.label(text="Utilities:", icon='PREFERENCES')
+        
+        col = utilities.column(align=True)
+        col.operator("gmdc.add_gmdc_param", text="Add GMDC parameters")
+
+		
