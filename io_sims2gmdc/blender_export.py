@@ -180,7 +180,14 @@ class ExportGMDC(Operator, ExportHelper):
         # Mark seams from UV Islands, ideally there would be a nice way to do this without ops
         bpy.context.view_layer.objects.active = object   # Set active selection to current object
         bpy.ops.object.mode_set(mode = 'EDIT')
+		
+        #Ensure UVs are properly selected for their split.
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.uv.seams_from_islands(mark_seams=True, mark_sharp=False)
+        bpy.ops.mesh.select_all(action='UNSELECT')
+        bpy.ops.uv.select_all(action='UNSELECT')
+		
         bpy.ops.object.mode_set(mode = 'OBJECT')
         bpy.context.view_layer.objects.active = None     # Revert active selection to None
 
