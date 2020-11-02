@@ -64,7 +64,10 @@ class BoundMesh:
             ob.modifiers["dec"].use_collapse_triangulate = True
 
             # Make a clone of the mesh
-            mesh = ob.to_mesh(bpy.context.scene, True, 'RENDER', False, False)
+            #mesh = ob.to_mesh(bpy.context.scene, True, 'RENDER', False, False)
+            depsgraph = bpy.context.evaluated_depsgraph_get()
+            object_eval  = ob.evaluated_get(depsgraph)
+            mesh = bpy.data.meshes.new_from_object(object_eval)
 
             # Remove decimate modifier now that the mesh is cloned
             ob.modifiers.remove( ob.modifiers["dec"] )

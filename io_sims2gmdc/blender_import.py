@@ -81,7 +81,7 @@ class ImportGMDC(Operator, ImportHelper):
             location=(0, 0, 0)
         )
         filename  = gmdc_data.header.file_name
-        container = bpy.context.scene.objects.active
+        container = bpy.context.active_object
         container.name = filename.split("-")[0]
         container["filename"]   = filename
 
@@ -137,13 +137,12 @@ class ImportGMDC(Operator, ImportHelper):
             location=(0,0,0)
         )
         # Armature object
-        # ob = bpy.context.object
-        ob = bpy.context.scene.objects.active
-        ob.show_x_ray = True
+        ob = bpy.context.active_object
+        ob.show_in_front = True
         ob.name = name
         # Armature
         amt = ob.data
-        amt.draw_type = 'STICK'
+        amt.display_type = 'STICK'
 
         # Create bones from skeleton data
         # Sims 2 bones seem to be reversed head to tail
@@ -157,7 +156,7 @@ class ImportGMDC(Operator, ImportHelper):
             rot = Quaternion(bonedata.rotation)
             rot.rotate( Quaternion((0,0,0,1)) )
 
-            bone.head = rot * trans
+            bone.head = rot @ trans
             if bonedata.parent != None:
                 parent = amt.edit_bones[bonedata.parent]
                 bone.parent = parent
@@ -205,8 +204,8 @@ class ImportGMDC(Operator, ImportHelper):
 
         object = bpy.data.objects.new(b_model.name, mesh)
         object.parent = container
-        bpy.context.scene.objects.link(object)
-        bpy.context.scene.objects.active = object
+        bpy.context.collection.objects.link(object)
+        bpy.context.view_layer.objects.active = object
 
 
         # Assign custom properties
@@ -251,7 +250,7 @@ class ImportGMDC(Operator, ImportHelper):
 
 
         # Create UV layer and load UV coordinates
-        mesh.uv_textures.new('UVMap')
+        mesh.uv_layers.new(name = 'UVMap')
         for i, polygon in enumerate(mesh.polygons):
             for j, loopindex in enumerate(polygon.loop_indices):
                 meshuvloop = mesh.uv_layers.active.data[loopindex]
@@ -265,7 +264,7 @@ class ImportGMDC(Operator, ImportHelper):
         if armature:
             # Create vertex groups for bone assignments
             for b in armature.data.bones:
-                object.vertex_groups.new(b.name)
+                object.vertex_groups.new(name = b.name)
 
 
             if len(b_model.vertices) != len(b_model.bone_assign) or \
@@ -323,15 +322,15 @@ class ImportGMDC(Operator, ImportHelper):
                         vert.co[2] + morph.deltas[i][2]
                     ) )
 
-        # Add vertex group to control whicg verts keep their old normals
-        #object.vertex_groups.new("__NORMALS__")
-        #vertgroup = object.vertex_groups['__NORMALS__']
+        # Add vertex group to control which verts keep their old normals
+        # object.vertex_groups.new("__NORMALS__")
+        # vertgroup = object.vertex_groups['__NORMALS__']
         ## Should be done manually by user before exporting
         # for i in range (len(mesh.vertices)):
         #     vertgroup.add( [i], 1, 'ADD' )
 
         # Import Original normals as vertex colors
-        mesh.vertex_colors.new("__NORMALS__")
+        mesh.vertex_colors.new(name = "__NORMALS__")
         color_map = mesh.vertex_colors['__NORMALS__']
         for poly in mesh.polygons:
             for vert_idx, loop_idx in zip(poly.vertices, poly.loop_indices):
@@ -339,8 +338,9 @@ class ImportGMDC(Operator, ImportHelper):
                 normal = Vector(b_model.normals[vert_idx])
                 normal.normalize()
                 rgb = ( normal + Vector((1.0, 1.0, 1.0)) ) * 0.5
+                rgba = rgb.to_4d()
                 # Set Vertex color to new color
-                color_map.data[loop_idx].color = rgb
+                color_map.data[loop_idx].color = rgba
         print("Original normals imported as vertex colors on layer '__NORMALS__'")
         print()
 
@@ -367,7 +367,7 @@ class ImportGMDC(Operator, ImportHelper):
         bm.to_mesh(mesh)
         bm.free()
 
-        object.select = True
+        object.select_set(state=True)
         bpy.ops.object.shade_smooth()
 
 
@@ -421,20 +421,20 @@ class ImportGMDC(Operator, ImportHelper):
             rot = Quaternion(bone.rotation)
             rot.rotate( Quaternion((0,0,0,1)) )
 
-            relative_zero = rot * trans
+            relative_zero = rot @ trans
             verts = []
             faces = []
             for vert in set.vertices:
                 # Relative vertex position: Absolute position - bone position
                 # I guess?
-                verts.append( rot * Vector(vert) + relative_zero )
+                verts.append( rot @ Vector(vert) + relative_zero )
 
             # Create object and mesh
             mesh = bpy.data.meshes.new(bone.name)
 
             object = bpy.data.objects.new(bone.name, mesh)
-            bpy.context.scene.objects.link(object)
-            bpy.context.scene.objects.active = object
+            bpy.context.collection.objects.link(object)
+            bpy.context.view_layer.objects.active = object
 
 
             # Load vertices and faces

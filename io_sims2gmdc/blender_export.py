@@ -54,7 +54,7 @@ class ExportGMDC(Operator, ExportHelper):
         obs_to_export = []
         scene_obs = []
         filename = "placeholder"
-        active = context.scene.objects.active
+        active = context.active_object
 
         if active.parent and active.parent.get("filename", None):
             active = active.parent
@@ -164,9 +164,10 @@ class ExportGMDC(Operator, ExportHelper):
         for poly in mesh.polygons:
             for vert_idx, loop_idx in zip(poly.vertices, poly.loop_indices):
                 #groups = [grp.group for grp in mesh.vertices[vert_idx].groups]
-                rgb = Vector(color_map.data[loop_idx].color)
-                if rgb.x == 0 and rgb.y == 0 and rgb.z == 0:
+                rgba = Vector(color_map.data[loop_idx].color)
+                if rgba.x == 0 and rgba.y == 0 and rgba.z == 0:
                     continue
+                rgb = rgba.to_3d()
                 normal = rgb * 2 - Vector((1,1,1))
                 mesh.vertices[vert_idx].normal = normal
 
@@ -179,16 +180,19 @@ class ExportGMDC(Operator, ExportHelper):
 
 
         # Mark seams from UV Islands, ideally there would be a nice way to do this without ops
-        bpy.context.scene.objects.active = object   # Set active selection to current object
+        bpy.context.view_layer.objects.active = object   # Set active selection to current object
         bpy.ops.object.mode_set(mode = 'EDIT')
         bpy.ops.uv.seams_from_islands(mark_seams=True, mark_sharp=False)
         bpy.ops.object.mode_set(mode = 'OBJECT')
-        bpy.context.scene.objects.active = None     # Revert active selection to None
+        bpy.context.view_layer.objects.active = None     # Revert active selection to None
 
 
         # Make a copy of the mesh to keep the original intact
-        mesh = object.to_mesh(bpy.context.scene, False, 'RENDER', False, False)
-        temp_obj = bpy.data.objects.new('temp_obj', mesh)
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        object_eval  = object.evaluated_get(depsgraph)
+        mesh = bpy.data.meshes.new_from_object(object_eval)
+			
+        temp_obj = bpy.data.objects.new(name='temp_obj', object_data=mesh)
         bm = bmesh.new()
         bm.from_mesh(mesh)
 
@@ -330,7 +334,7 @@ class ExportGMDC(Operator, ExportHelper):
                 # Replace normals
                 ExportGMDC.normals_from_colors(morphmesh)
 
-                # Create morph and remove copied mesh
+				# Create morph and remove copied mesh
                 morphs.append( MorphMap.from_blender(mesh, morphmesh, key.name) )
                 bpy.data.meshes.remove(morphmesh)
 
@@ -382,7 +386,11 @@ class ExportGMDC(Operator, ExportHelper):
 
             for ob in objects:
                 ob.modifiers.new("tri", 'TRIANGULATE')
-                mesh = ob.to_mesh(bpy.context.scene, True, 'RENDER', False, False)
+				
+                depsgraph = bpy.context.evaluated_depsgraph_get()
+                object_eval  = ob.evaluated_get(depsgraph)
+                mesh = bpy.data.meshes.new_from_object(object_eval)
+				
                 ob.modifiers.remove( ob.modifiers["tri"] )
 
 
