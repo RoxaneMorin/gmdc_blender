@@ -351,7 +351,7 @@ class ImportGMDC(Operator, ImportHelper):
 
         edges = self.get_sharp(b_model)
 
-        bmesh.ops.remove_doubles(bm, verts=bm.verts)
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)
 
         # Check mesh edges against edge dictionary, mark hard edges sharp after removing doubles
         numedges = 0
