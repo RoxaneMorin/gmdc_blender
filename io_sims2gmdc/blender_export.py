@@ -185,8 +185,8 @@ class ExportGMDC(Operator, ExportHelper):
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.uv.seams_from_islands(mark_seams=True, mark_sharp=False)
-        bpy.ops.mesh.select_all(action='UNSELECT')
-        bpy.ops.uv.select_all(action='UNSELECT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.uv.select_all(action='DESELECT')
 		
         bpy.ops.object.mode_set(mode = 'OBJECT')
         bpy.context.view_layer.objects.active = None     # Revert active selection to None
