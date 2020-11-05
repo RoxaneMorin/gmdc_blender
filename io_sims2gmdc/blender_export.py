@@ -156,7 +156,7 @@ class ExportGMDC(Operator, ExportHelper):
         #    return
 
         #mesh = object.data
-        try:
+        if '__NORMALS__' in mesh.vertex_colors:
         	color_map = mesh.vertex_colors['__NORMALS__']
 
         	for poly in mesh.polygons:
@@ -167,7 +167,6 @@ class ExportGMDC(Operator, ExportHelper):
         	        rgb = rgba.to_3d()
         	        normal = rgb * 2 - Vector((1,1,1))
         	        mesh.vertices[vert_idx].normal = normal
-        except: return
 
 
 
