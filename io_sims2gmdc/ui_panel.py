@@ -1,4 +1,5 @@
 import bpy
+from mathutils import Vector
 from rna_prop_ui import rna_idprop_ui_prop_get
 from bpy.props import (StringProperty,
                        BoolProperty,
@@ -342,6 +343,37 @@ class OP_AddGMDCParams(bpy.types.Operator):
 # </editor-fold> -- END PROPERTIES
 
 
+class OP_NormalsToVertexColor(bpy.types.Operator):
+    bl_label = "Copy custom normals to vertex color"
+    bl_idname = "gmdc.normals_to_vertex_color"
+
+    def execute(self, context):
+        obj = context.active_object
+        mesh = obj.data
+        
+        mesh.calc_normals_split()
+        
+        if '__NORMALS__' not in mesh.vertex_colors:
+            mesh.vertex_colors.new(name = "__NORMALS__")
+        color_map = mesh.vertex_colors['__NORMALS__']
+        
+        for loop in mesh.loops:
+            i = loop.index
+    
+            # Convert Loop normal to a valid colour.
+            normal = Vector(loop.normal)
+            normal.normalize()
+    
+            rgb = ( normal + Vector((1.0, 1.0, 1.0)) ) * 0.5
+            rgba = rgb.to_4d()
+    
+            # Set Vertex color to new color
+            color_map.data[loop.index].color = rgba
+        
+        return {'FINISHED'}
+# </editor-fold> -- END PROPERTIES
+
+
 class GmdcPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
     bl_label = "Sims 2 GMDC Tools Panel"
@@ -473,5 +505,5 @@ class GmdcPanel(bpy.types.Panel):
         
         col = utilities.column(align=True)
         col.operator("gmdc.add_gmdc_param", text="Add GMDC parameters")
+        col.operator("gmdc.normals_to_vertex_color", text="Copy split normals to VertexColor")
 
-		

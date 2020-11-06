@@ -34,6 +34,7 @@ from .ui_panel       import(PROP_GmdcSettings,
                             OP_UnHideArmature,
                             OP_SyncMorphs,
                             OP_AddGMDCParams,
+                            OP_NormalsToVertexColor,
                             GmdcPanel)
 
 
@@ -59,6 +60,7 @@ classes = [
 	OP_UnHideArmature,
 	OP_SyncMorphs,
 	OP_AddGMDCParams,
+	OP_NormalsToVertexColor,
 	PROP_GmdcSettings
 ]
 
