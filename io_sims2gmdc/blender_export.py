@@ -393,12 +393,13 @@ class ExportGMDC(Operator, ExportHelper):
 				
                 depsgraph = bpy.context.evaluated_depsgraph_get()
                 object_eval  = ob.evaluated_get(depsgraph)
-                mesh = bpy.data.meshes.new_from_object(object_eval)
+                mesh = bpy.data.meshes.new_from_object(object_eval, preserve_all_data_layers=True, depsgraph=depsgraph)
 				
                 ob.modifiers.remove( ob.modifiers["tri"] )
 
 
                 for f in mesh.polygons:
+                    print("f : ", f)
                     assigncount = 0
 
                     for idx in f.vertices:
@@ -420,7 +421,7 @@ class ExportGMDC(Operator, ExportHelper):
 
                 for v in vertices:
                     # I don't know how this works, but it seems like it does
-                    newco = rot * Vector( (v.co[0], v.co[1], -v.co[2]) )
+                    newco = rot @ Vector( (v.co[0], v.co[1], -v.co[2]) )
                     # newco = rot * newcoord
                     vertco.append(tuple(
                         Vector(bones[bonemap[subset]].position) - newco
