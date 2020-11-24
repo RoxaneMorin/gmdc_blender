@@ -269,8 +269,9 @@ class ImportGMDC(Operator, ImportHelper):
 
             if len(b_model.vertices) != len(b_model.bone_assign) or \
                 len(b_model.vertices) != len(b_model.bone_weight):
-                error = 'ERROR: Group ' + b_model.name + '\'s vertex index counts don\'t match.'
-                return error
+                print("WARNING: Group ", b_model.name, "'s vertex index counts don't match.")
+                #error = 'ERROR: Group ' + b_model.name + '\'s vertex index counts don\'t match.'
+                #return error
 
 
             print('Applying bone weights...')
