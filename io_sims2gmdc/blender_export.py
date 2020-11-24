@@ -192,6 +192,7 @@ class ExportGMDC(Operator, ExportHelper):
 
 
         # Make a copy of the mesh to keep the original intact
+        original_mesh = object.data
         depsgraph = bpy.context.evaluated_depsgraph_get()
         object_eval  = object.evaluated_get(depsgraph)
         mesh = bpy.data.meshes.new_from_object(object_eval, preserve_all_data_layers=True, depsgraph=depsgraph)
@@ -311,27 +312,30 @@ class ExportGMDC(Operator, ExportHelper):
         # Morphs
         morphs = []
         morph_bytemap = None
-        if mesh.shape_keys:
 
-            temp_obj.show_only_shape_key = True
+        if original_mesh.shape_keys:
 
             # Recalculate normals for each morph and then create it
-            for key in temp_obj.data.shape_keys.key_blocks[1:]:
-                # Set active shape key
-                idx = temp_obj.data.shape_keys.key_blocks.find(key.name)
-                temp_obj.active_shape_key_index = idx
-
-                # Create a copy from active shape key
-                morphmesh = temp_obj.to_mesh(bpy.context.scene, True, 'RENDER', False, False)
-
-                # Initialize bmesh
+            for key in original_mesh.shape_keys.key_blocks[1:]:
+                idx = original_mesh.shape_keys.key_blocks.find(key.name)
+                
+                # Create bmesh for the current blendshape.
                 morph_bm = bmesh.new()
-                morph_bm.from_mesh(morphmesh)
+                morph_bm.from_mesh(original_mesh, use_shape_key=True, shape_key_index=idx)
+                morph_bm.verts.ensure_lookup_table()
+                
+                # Make sure it has the same number of vertices as the regular meshé
+                uvsplit = []
+                for e in morph_bm.edges:
+                    if e.seam or not e.smooth:
+                        uvsplit.append(e)
+                bmesh.ops.split_edges(morph_bm, edges=uvsplit)
 
                 # Recalculate normals and create morph
                 ExportGMDC.recalc_normals(morph_bm, neckfix_type)
 
                 # Remove copied mesh
+                morphmesh = temp_obj.to_mesh()
                 morph_bm.to_mesh(morphmesh)
                 morph_bm.free()
 
@@ -340,13 +344,7 @@ class ExportGMDC(Operator, ExportHelper):
 
 				# Create morph and remove copied mesh
                 morphs.append( MorphMap.from_blender(mesh, morphmesh, key.name) )
-                bpy.data.meshes.remove(morphmesh)
-
-
-            temp_obj.active_shape_key_index = 0
-            temp_obj.show_only_shape_key = False
-
-
+                #bpy.data.meshes.remove(morphmesh) - no longer seems needed ?
 
             morph_bytemap = MorphMap.make_bytemap(morphs, len(vertices))
 
