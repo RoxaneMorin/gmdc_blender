@@ -73,7 +73,7 @@ class ExportGMDC(Operator, ExportHelper):
                 custom_bounds = ob
 
 
-        # Further sanity checks, check array length and existance of Armature modifier
+        # Further sanity checks, check array length and existence of Armature modifier
         if len(obs_to_export) == 0:
             print('ERROR: No valid objects were found')
             return{'CANCELLED'}
@@ -194,8 +194,8 @@ class ExportGMDC(Operator, ExportHelper):
         # Make a copy of the mesh to keep the original intact
         depsgraph = bpy.context.evaluated_depsgraph_get()
         object_eval  = object.evaluated_get(depsgraph)
-        mesh = bpy.data.meshes.new_from_object(object_eval)
-			
+        mesh = bpy.data.meshes.new_from_object(object_eval, preserve_all_data_layers=True, depsgraph=depsgraph)
+		
         temp_obj = bpy.data.objects.new(name='temp_obj', object_data=mesh)
         bm = bmesh.new()
         bm.from_mesh(mesh)
@@ -399,7 +399,6 @@ class ExportGMDC(Operator, ExportHelper):
 
 
                 for f in mesh.polygons:
-                    print("f : ", f)
                     assigncount = 0
 
                     for idx in f.vertices:
