@@ -269,9 +269,14 @@ class ImportGMDC(Operator, ImportHelper):
 
             if len(b_model.vertices) != len(b_model.bone_assign) or \
                 len(b_model.vertices) != len(b_model.bone_weight):
-                print("WARNING: Group ", b_model.name, "'s vertex index counts don't match.")
-                #error = 'ERROR: Group ' + b_model.name + '\'s vertex index counts don\'t match.'
-                #return error
+                
+                #Assign armature modifier anyway.
+                object.modifiers.new("Armature", 'ARMATURE')
+                object.modifiers["Armature"].object = armature
+                object.modifiers["Armature"].use_deform_preserve_volume = False
+
+                error = 'ERROR: Group ' + b_model.name + '\'s vertex index counts don\'t match.'
+                return error
 
 
             print('Applying bone weights...')
